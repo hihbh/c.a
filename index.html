@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محلل المنافسين الذكي (SWOT AI)</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        button {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #4338ca;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 20px 0;
+        }
+        .swot-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .swot-card {
+            padding: 20px;
+            border-radius: 8px;
+            color: #1e293b;
+        }
+        .strengths { background-color: #dcfce7; border-left: 5px solid #22c55e; }
+        .weaknesses { background-color: #fee2e2; border-left: 5px solid #ef4444; }
+        .opportunities { background-color: #e0f2fe; border-left: 5px solid #0ea5e9; }
+        .threats { background-color: #fef3c7; border-left: 5px solid #f59e0b; }
+        .swot-card h3 {
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .swot-card ul {
+            padding-right: 20px;
+            margin-bottom: 0;
+        }
+        .swot-card li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📊 محلل المنافسين الذكي بـ SWOT</h1>
+    
+    <div class="form-group">
+        <label for="competitorUrl">رابط صفحة / موقع المنافس:</label>
+        <input type="text" id="competitorUrl" placeholder="https://example.com أو رابط صفحة الفيسبوك/تيك توك">
+    </div>
+
+    <div class="form-group">
+        <label for="competitorInfo">نبذة مختصرة أو ملاحظات عن المنافس (اختياري ولكن يحسن النتائج):</label>
+        <textarea id="competitorInfo" placeholder="مثال: بيبيع كوتشيات أونلاين، أسعاره رخيصة بس الشحن عنده بطيء والناس بتشتكي من خدمة العملاء..."></textarea>
+    </div>
+
+    <button onclick="analyzeCompetitor()">ابدأ التحليل بالذكاء الاصطناعي ✨</button>
+
+    <div id="loading">جاري تحليل المنافس واستخراج استراتيجية SWOT... انتظر ثواني 🤖</div>
+
+    <div id="swotResult" class="swot-grid"></div>
+</div>
+
+<script>
+    // ⚠️ حط مفتاح الـ API بتاعك هنا
+    const GEMINI_API_KEY = "حط_الـ_API_KEY_بتاعك_هنا"; 
+
+    async function analyzeCompetitor() {
+        const url = document.getElementById('competitorUrl').value;
+        const info = document.getElementById('competitorInfo').value;
+        const loading = document.getElementById('loading');
+        const resultDiv = document.getElementById('swotResult');
+
+        if (!url) {
+            alert('من فضلك أدخل رابط المنافس أولاً');
+            return;
+        }
+
+        loading.style.display = 'block';
+        resultDiv.innerHTML = '';
+
+        const prompt = `أنت خبير تسويق استراتيجي ومحلل منافسين محترف. 
+        مطلوب منك عمل تحليل SWOT دقيق ومخصص لمنافس بناءً على الرابط التالي: ${url} 
+        ومعطيات إضافية: ${info}.
+        
+        قم بتحليل نقاط القوة (Strengths)، نقاط الضعف (Weaknesses)، الفرص (Opportunities)، والتهديدات (Threats) المتوقعة لهذا المنافس في السوق.
+        
+        يجب أن تكون الإجابة بصيغة JSON صالحة (Valid JSON) فقط ومكتوبة باللغة العربية، بنفس التركيبة التالية تماماً وبدون أي نص إضافي قبل أو بعد الـ JSON:
+        {
+          "strengths": ["نقطة 1", "نقطة 2"],
+          "weaknesses": ["نقطة 1", "نقطة 2"],
+          "opportunities": ["نقطة 1", "نقطة 2"],
+          "threats": ["نقطة 1", "نقطة 2"]
+        }`;
+
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }, // تم تعديل هذا السطر ليعمل بنجاح
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }]
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('API Request Failed');
+            }
+
+            const data = await response.json();
+            let responseText = data.candidates[0].content.parts[0].text;
+            
+            responseText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+            
+            const swotData = JSON.parse(responseText);
+            displaySWOT(swotData);
+
+        } catch (error) {
+            console.error(error);
+            alert('حدث خطأ أثناء التحليل، تأكد من صحة الـ API Key الخاص بك أو جرب مجدداً.');
+        } finally {
+            loading.style.display = 'none';
+        }
+    }
+
+    function displaySWOT(data) {
+        const resultDiv = document.getElementById('swotResult');
+        
+        resultDiv.innerHTML = `
+            <div class="swot-card strengths">
+                <h3>💪 نقاط القوة (Strengths)</h3>
+                <ul>${data.strengths.map(item => `<li>${item}</li>`).join('')}</ul>
+            </div>
+            <div class="swot-card weaknesses">
+                <h3>📉 نقاط الضعف (Weaknesses)</h3>
+                <ul>${data.weaknesses.map(item => `<li>${item}</li>`).join('')}</ul>
+            </div>
+            <div class="swot-card opportunities">
+                <h3>🚀 الفرص المتاحة (Opportunities)</h3>
+                <ul>${data.opportunities.map(item => `<li>${item}</li>`).join('')}</ul>
+            </div>
+            <div class="swot-card threats">
+                <h3>⚠️ التهديدات (Threats)</h3>
+                <ul>${data.threats.map(item => `<li>${item}</li>`).join('')}</ul>
+            </div>
+        `;
+    }
+</script>
+
+</body>
+</html>
